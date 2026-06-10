@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>咖啡館幸運抽抽樂</title>
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:"Microsoft JhengHei",sans-serif;
+  background:
+    radial-gradient(circle at 20% 10%,#fff3d6 0 8%,transparent 9%),
+    linear-gradient(135deg,#f5e6d3,#d7b899,#8b5e3c);
+  color:#3b2a1e;
+  text-align:center;
+}
+.app{max-width:980px;margin:auto;padding:24px}
+h1{
+  font-size:clamp(2rem,5vw,4rem);
+  color:#6f3f24;
+  text-shadow:3px 3px #fff4e6;
+}
+.subtitle{font-size:1.25rem;font-weight:bold;margin-bottom:18px;color:#5b3a29}
+.card{
+  background:rgba(255,248,235,.92);
+  border:5px solid #fff4df;
+  border-radius:30px;
+  box-shadow:0 18px 35px rgba(60,35,20,.25);
+  padding:20px;
+}
+.layout{
+  display:grid;
+  grid-template-columns:1fr 1.2fr 1fr;
+  gap:18px;
+  align-items:center;
+}
+textarea{
+  width:100%;
+  height:230px;
+  border-radius:22px;
+  border:4px solid #c49a6c;
+  padding:16px;
+  font-size:1.2rem;
+  box-sizing:border-box;
+  font-family:inherit;
+}
+button{
+  border:0;
+  border-radius:999px;
+  padding:16px 22px;
+  margin:8px;
+  font-size:1.2rem;
+  font-weight:bold;
+  color:white;
+  cursor:pointer;
+  box-shadow:0 7px 0 rgba(0,0,0,.18);
+}
+button:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.save{background:linear-gradient(135deg,#8b5e3c,#c08457)}
+.reset{background:linear-gradient(135deg,#b85c38,#e07a5f)}
+.spin{background:linear-gradient(135deg,#6f3f24,#d08954);font-size:2rem;width:90%;max-width:440px}
+.full{background:linear-gradient(135deg,#3f6b4f,#7aa874)}
+.stats button{background:linear-gradient(135deg,#7b4f36,#b07d57);width:90%}
+.table{
+  width:100%;
+  height:120px;
+  background:linear-gradient(135deg,#8b5e3c,#5d3a24);
+  border-radius:50%;
+  margin:12px auto;
+  box-shadow:0 18px 20px rgba(60,35,20,.25);
+}
+.wheel{
+  width:min(410px,78vw);
+  height:min(410px,78vw);
+  margin:20px auto;
+  border-radius:50%;
+  border:12px solid #fff4df;
+  background:conic-gradient(
+    #6f3f24,
+    #c08457,
+    #f2cc8f,
+    #8b5e3c,
+    #e7c8a0,
+    #a47148,
+    #fff1d6,
+    #6f3f24
+  );
+  display:grid;
+  place-items:center;
+  transition:transform 3.2s cubic-bezier(.12,.74,.18,1);
+  box-shadow:0 18px 32px rgba(60,35,20,.35);
+}
+.center{
+  width:42%;
+  height:42%;
+  border-radius:50%;
+  background:#fff8eb;
+  border:8px solid #d6a86c;
+  display:grid;
+  place-items:center;
+  color:#6f3f24;
+  font-size:1.7rem;
+  font-weight:bold;
+  padding:12px;
+}
+.pointer{
+  width:0;height:0;
+  border-left:24px solid transparent;
+  border-right:24px solid transparent;
+  border-top:56px solid #b85c38;
+  margin:0 auto -36px;
+  position:relative;
+  z-index:3;
+}
+.cafeGirl{
+  font-size:5rem;
+  margin:10px 0;
+}
+.info{
+  background:#fff4df;
+  border:3px dashed #c08457;
+  border-radius:20px;
+  padding:12px;
+  font-weight:bold;
+  line-height:1.6;
+}
+.statGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.stat{
+  background:#fff8eb;
+  border-radius:18px;
+  padding:12px;
+  font-weight:bold;
+  border:3px solid #ead4b5;
+}
+.stat b{
+  display:block;
+  font-size:2rem;
+  color:#8b5e3c;
+}
+.drawnList{
+  margin-top:14px;
+  min-height:180px;
+  max-height:300px;
+  overflow:auto;
+  background:#fff8eb;
+  border-radius:20px;
+  padding:12px;
+  text-align:left;
+  font-weight:bold;
+}
+.drawnItem{
+  padding:8px;
+  border-bottom:1px dashed #d6a86c;
+}
+.result{
+  position:fixed;
+  inset:0;
+  background:rgba(35,22,12,.42);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  backdrop-filter:blur(5px);
+}
+.resultBox{
+  background:#fff8eb;
+  width:min(650px,90vw);
+  border-radius:40px;
+  border:8px solid #f2cc8f;
+  padding:32px 24px;
+  box-shadow:0 30px 70px rgba(0,0,0,.3);
+}
+.winner{
+  font-size:clamp(2.8rem,8vw,5rem);
+  color:#b85c38;
+  font-weight:bold;
+  margin:20px 0;
+  word-break:break-word;
+}
+canvas{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:30;
+}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+
+<div class="app">
+  <h1>☕ 咖啡館幸運抽抽樂</h1>
+  <div class="subtitle">今日幸運客人・文青咖啡館・木質桌面風</div>
+
+  <div class="layout">
+    <div class="card">
+      <h2>📋 今日客人名單</h2>
+      <textarea id="names" placeholder="一行一位，例如：
+1 王小明
+2 林小華
+3 陳小美"></textarea>
+      <button class="save" onclick="saveNames()">確認儲存</button>
+      <button class="reset" onclick="resetDraw()">重新抽籤</button>
+      <button class="full" onclick="toggleFullscreen()">全螢幕模式</button>
+      <div class="info" id="message">請先輸入名單。</div>
+    </div>
+
+    <div class="card">
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel">
+        <div class="center" id="center">READY</div>
+      </div>
+      <button class="spin" onclick="draw()">☕ 抽今日幸運客人</button>
+      <div class="table"></div>
+    </div>
+
+    <div class="card stats">
+      <div class="cafeGirl">☕</div>
+      <h2>📊 抽選紀錄</h2>
+      <div class="statGrid">
+        <div class="stat">總人數<b id="total">0</b></div>
+        <div class="stat">剩餘<b id="left">0</b></div>
+        <div class="stat">已抽<b id="drawnCount">0</b></div>
+        <div class="stat">音效<b id="soundState">ON</b></div>
+      </div>
+      <button onclick="toggleSound()">🔊 開關音效</button>
+      <div class="drawnList" id="drawnList">尚未抽出名單</div>
+      <button onclick="clearHistory()">清除紀錄</button>
+    </div>
+  </div>
+</div>
+
+<div class="result" id="result">
+  <div class="resultBox">
+    <div style="font-size:2rem;font-weight:bold;color:#6f3f24;">
+      ☕ 今日幸運客人是 ☕
+    </div>
+    <div class="winner" id="winner">---</div>
+    <button class="save" onclick="closeResult()">再抽一杯</button>
+  </div>
+</div>
+
+<script>
+let students=[],remaining=[],drawn=[],rotation=0,soundOn=true;
+
+window.onload=()=>{
+  const saved=localStorage.getItem("cafeNames");
+  const savedDrawn=localStorage.getItem("cafeDrawn");
+  if(saved){
+    names.value=saved;
+    students=parse(saved);
+    drawn=savedDrawn?JSON.parse(savedDrawn):[];
+    remaining=students.filter(x=>!drawn.includes(x));
+  }
+  update();
+};
+
+function parse(text){
+  return text.split(/[\n,，、\t]+/).map(x=>x.trim()).filter(Boolean);
+}
+
+function saveNames(){
+  students=[...new Set(parse(names.value))];
+  remaining=[...students];
+  drawn=[];
+  localStorage.setItem("cafeNames",names.value);
+  localStorage.setItem("cafeDrawn",JSON.stringify(drawn));
+  message.textContent=students.length?`已載入 ${students.length} 位今日客人。`:"請先輸入名單。";
+  update();
+}
+
+function resetDraw(){
+  remaining=[...students];
+  drawn=[];
+  localStorage.setItem("cafeDrawn",JSON.stringify(drawn));
+  message.textContent="已重新開始今日抽選。";
+  update();
+}
+
+function update(){
+  total.textContent=students.length;
+  left.textContent=remaining.length;
+  drawnCount.textContent=drawn.length;
+  soundState.textContent=soundOn?"ON":"OFF";
+  center.textContent=students.length?(remaining.length?`剩餘 ${remaining.length}`:"抽完囉"):"READY";
+  drawnList.innerHTML=drawn.length
+    ? drawn.map((x,i)=>`<div class="drawnItem">${i+1}. ${escapeHtml(x)}</div>`).join("")
+    : "尚未抽出名單";
+}
+
+function draw(){
+  if(!students.length){alert("請先輸入並儲存名單");return;}
+  if(!remaining.length){alert("全部都抽過囉，請按重新抽籤");return;}
+
+  const i=Math.floor(Math.random()*remaining.length);
+  const name=remaining[i];
+
+  rotation+=1440+Math.floor(Math.random()*900);
+  wheel.style.transform=`rotate(${rotation}deg)`;
+  center.textContent="沖煮中";
+  message.textContent="咖啡香正在轉動中……";
+
+  setTimeout(()=>{
+    remaining.splice(i,1);
+    drawn.push(name);
+    localStorage.setItem("cafeDrawn",JSON.stringify(drawn));
+    winner.textContent=name;
+    result.style.display="flex";
+    update();
+    coffeeConfetti();
+    playSound();
+    message.textContent=`剛剛抽中：${name}`;
+  },3200);
+}
+
+function closeResult(){
+  result.style.display="none";
+}
+
+function clearHistory(){
+  drawn=[];
+  remaining=[...students];
+  localStorage.setItem("cafeDrawn",JSON.stringify(drawn));
+  update();
+}
+
+function toggleSound(){
+  soundOn=!soundOn;
+  update();
+}
+
+function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen?.();
+  }else{
+    document.exitFullscreen?.();
+  }
+}
+
+function playSound(){
+  if(!soundOn)return;
+  try{
+    const C=window.AudioContext||window.webkitAudioContext;
+    const ctx=new C();
+    [392,523,659,784].forEach((f,i)=>{
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      o.type="sine";
+      o.frequency.value=f;
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(.001,ctx.currentTime+i*.12);
+      g.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+i*.12+.03);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.12+.24);
+      o.start(ctx.currentTime+i*.12);
+      o.stop(ctx.currentTime+i*.12+.26);
+    });
+  }catch(e){}
+}
+
+function coffeeConfetti(){
+  const canvas=document.getElementById("fx");
+  const ctx=canvas.getContext("2d");
+  canvas.width=innerWidth;
+  canvas.height=innerHeight;
+
+  let pieces=Array.from({length:170},()=>({
+    x:Math.random()*canvas.width,
+    y:-20-Math.random()*200,
+    s:6+Math.random()*10,
+    v:2+Math.random()*5,
+    r:Math.random()*Math.PI,
+    c:["#6f3f24","#c08457","#f2cc8f","#fff4df","#b85c38"][Math.floor(Math.random()*5)]
+  }));
+
+  let t=0;
+  function anim(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.y+=p.v;
+      p.x+=Math.sin(p.y/35);
+      p.r+=.05;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.r);
+      ctx.fillStyle=p.c;
+      ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.7);
+      ctx.restore();
+    });
+    if(t++<190)requestAnimationFrame(anim);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  anim();
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g,m=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    "\"":"&quot;",
+    "'":"&#39;"
+  }[m]));
+}
+</script>
+</body>
+</html>
